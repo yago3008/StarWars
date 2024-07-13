@@ -35,7 +35,7 @@ def message(msg, color, x, y, display, font_style):
 def lose(player):
     return player.life <= 0 
 
-def main():
+def main(   ):
 
     while game.playing:
         game.gameover(player, boss)
@@ -57,7 +57,7 @@ def main():
 
         
         if not game.boss_fight:
-            game.spawn_enemy(player, boss, display)
+            game.spawn_enemy(player, display)
         else:
             game.spawn_boss(boss, player, display)
         

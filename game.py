@@ -7,7 +7,7 @@ class Game:
     def __init__(self, score):
         self.enemies = [Enemy(score)]
         self.buffs = []
-        self.boss_fight = True
+        self.boss_fight = False
         self.playing = True
 
     def spawn_enemies(self, player):
@@ -43,7 +43,7 @@ class Game:
             for bullet in player.ammo:
                 for enemy in self.enemies:
                     if self.checkEnemyCollision(bullet, (enemy.x, enemy.y)):
-                        player.score += 10
+                        player.score += 7
                         player.ammo.remove(bullet)
                         buff = self.create_buff((enemy.x, enemy.y))
                         if buff:
