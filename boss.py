@@ -20,11 +20,8 @@ class Boss:
         self.laser = False
         self.stop = False
         self.change_direction = False
-        self.shaking = True
-        self.shake_duration = 0
-        self.shake_intensity = 0
-        self.original_y = self.y
-        self.shake_direction = 1
+        self.last_laser_time = 0
+        self.lasers_drawn = []  # Lista para armazenar as posições dos lasers desenhados
 
     def draw(self, display):
         draw_pixel_art(boss_pattern, self.x, self.y, self.width, display)
@@ -75,8 +72,10 @@ class Boss:
                 self.ammo.remove(bullet)
 
 
-    def shoot(self, display, player):
 
+
+    def shoot(self, display, player):
+        current_time = pygame.time.get_ticks()
         if self.laser:
             if (self.delay // 20) % 2 == 0 and self.x != 250:
                 draw_pixel_art(exclamation_pattern, self.x + 240, self.y - 10, 5, display)
@@ -84,15 +83,22 @@ class Boss:
             if self.x < 250:
                 self.x += self.speed
             elif self.x > 250:
-                self.x -= self.speed
+                self.x -= self.speed 
             self.stop = True
             if self.x == 250:
-                for i in range(12):
-                    draw_pixel_art(laser_patternPT1, self.x + 124, (50 + 120) + (50 * i), 5, display)
-                draw_pixel_art(laser_patternPT2, self.x + 124, 50 + 530, 5, display)
-                draw_pixel_art(angry_pattern, self.x + 210, 50, 4, display)
+                # Verifica se 0.08 segundo se passou desde o último desenho do laser
+                if current_time - self.last_laser_time >= 10 and len(self.lasers_drawn) < 42:
+                    self.last_laser_time = current_time
+                    self.lasers_drawn.append(len(self.lasers_drawn))  # Adiciona o índice do novo laser
+                # Desenha todos os lasers armazenados
+                for i in self.lasers_drawn:
+                    draw_pixel_art(laser_patternPT1, self.x + 124, (50 + 120) + (10 * i), 5, display)
+                # Desenha os outros padrões
+                if len(self.lasers_drawn) >= 42:
+                    draw_pixel_art(laser_patternPT2, self.x + 124, 590, 5, display)
+                    draw_pixel_art(angry_pattern, self.x + 210, 50, 4, display)
 
-                if self.checkLaserCollision(player, (self.x + 124),  (50 + 530), self.delay):
+                if self.checkLaserCollision(player, (self.x + 124),  590, self.delay):
                     player.life -= 1
                 if self.delay % 300 == 0:
                     self.laser = False
@@ -130,7 +136,7 @@ class Boss:
     def checkLaserCollision(self, player, x, y, delay):
         laser_rect = pygame.Rect(x, y, 10, 550)
         player_rect = pygame.Rect(player.x, player.y, player.size, player.size)
-        if delay % 20 == 0:
+        if delay % 3 == 0:
             return laser_rect.colliderect(player_rect)
     
     

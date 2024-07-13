@@ -78,6 +78,7 @@ class Game:
                 if self.checkBossCollision(bullet, (boss.x, boss.y)):
                     player.ammo.remove(bullet)
                     boss.life -= 1
+                    print(boss.life)
     
     def gameover(self, player, boss):
         if player.life <= 0 or boss.life <= 0:

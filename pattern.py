@@ -70,19 +70,10 @@ boss_pattern = [
 
 laser_patternPT1 = [
  "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
- "    eedd22ddee    ",
+ "    eedd22ddee    "
 ]
 
 laser_patternPT2 = [
- "   eedd2222ddee   ",
  "e  eedd2222ddee  e",
  "eeeddd222222dddeee",
  "eeeddd222222dddeee",

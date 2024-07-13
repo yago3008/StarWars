@@ -11,7 +11,7 @@ class Player:
         self.pattern = player_pattern
         self.speed = 6
         self.buffs = []
-        self.life = 5
+        self.life = 100
         self.max_life = 10
         self.invulnerable = False
         self.doubleShoot = False
