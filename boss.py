@@ -14,10 +14,10 @@ class Boss:
         self.ammo = []
         self.delay = 0
         self.bullet_speed = 0
-        self.shooting = False
+        self.shooting = True
         self.minigun = False
         self.cannon = False
-        self.laser = True
+        self.laser = False
         self.stop = False
         self.change_direction = False
         self.shaking = True
@@ -46,7 +46,6 @@ class Boss:
                 draw_pixel_art(bossLifeMid_pattern, x + ((x // 6) * i), y, width, display)
             else:
                 draw_pixel_art(bossEmptyLifeMid_pattern, x + ((x // 6) * i), y, width, display)
-
                 
         if self.life > (int(self.maxLife * 0.1) * 9):
             draw_pixel_art(bossLifeEnd_pattern, positionTail, y, width, display)
@@ -69,7 +68,7 @@ class Boss:
         for bullet in self.ammo:
             bullet[1] += self.bullet_speed
             draw_pixel_art(pattern, bullet[0], bullet[1], bullet_sz, display)
-            if self.check_collision(player, bullet[0], bullet[1] , bullet_sz + 10, bullet_sz+ 10):
+            if self.checkBossBulletCollision(player, bullet[0], bullet[1] , bullet_sz + 10, bullet_sz+ 10):
                 player.life -= 1
                 self.ammo.remove(bullet)
             if bullet[1] > display_H:
@@ -77,6 +76,7 @@ class Boss:
 
 
     def shoot(self, display, player):
+
         if self.laser:
             if (self.delay // 20) % 2 == 0 and self.x != 250:
                 draw_pixel_art(exclamation_pattern, self.x + 240, self.y - 10, 5, display)
@@ -91,6 +91,9 @@ class Boss:
                     draw_pixel_art(laser_patternPT1, self.x + 124, (50 + 120) + (50 * i), 5, display)
                 draw_pixel_art(laser_patternPT2, self.x + 124, 50 + 530, 5, display)
                 draw_pixel_art(angry_pattern, self.x + 210, 50, 4, display)
+
+                if self.checkLaserCollision(player, (self.x + 124),  (50 + 530), self.delay):
+                    player.life -= 1
                 if self.delay % 300 == 0:
                     self.laser = False
                     self.shooting = True
@@ -119,8 +122,15 @@ class Boss:
                 self.laser = True
                 self.delay = 0
 
-    def check_collision(self, player, x, y , sz1, sz2):
+    def checkBossBulletCollision(self, player, x, y , sz1, sz2):
         bullet_rect = pygame.Rect(x, y, sz1, sz2)
         player_rect = pygame.Rect(player.x, player.y, player.size, player.size)
         return bullet_rect.colliderect(player_rect)
+    
+    def checkLaserCollision(self, player, x, y, delay):
+        laser_rect = pygame.Rect(x, y, 10, 550)
+        player_rect = pygame.Rect(player.x, player.y, player.size, player.size)
+        if delay % 20 == 0:
+            return laser_rect.colliderect(player_rect)
+    
     

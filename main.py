@@ -1,6 +1,6 @@
 import pygame
-from player import Player
 from game import Game
+from player import Player
 from boss import Boss
 from util import draw_pixel_art, color, display_W, display_H, display
 from pattern import heart_pattern
@@ -13,6 +13,7 @@ clock = pygame.time.Clock()
 font_style = pygame.font.SysFont("bahnschrift", 22)
 
 # Variáveis globais
+playing = True
 player = Player()
 game = Game(player.score)
 boss = Boss()
@@ -34,10 +35,9 @@ def message(msg, color, x, y, display, font_style):
 def lose(player):
     return player.life <= 0 
 
-def main():   
-    playing = True
+def main():
 
-    while playing:
+    while game.playing:
         game.gameover(player, boss)
         cleanScreen(display)
         draw_hearts(player.life, display)
@@ -48,7 +48,7 @@ def main():
   
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                playing = False
+                game.playing = False
             if event.type == pygame.KEYDOWN: 
                 if event.key == pygame.K_SPACE:
                     player.ammo.append([player.x + player.size // 2 - 2, player.y])

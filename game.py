@@ -8,6 +8,7 @@ class Game:
         self.enemies = [Enemy(score)]
         self.buffs = []
         self.boss_fight = True
+        self.playing = True
 
     def spawn_enemies(self, player):
         if len(self.enemies) < player.score // 50 + 1:
@@ -80,5 +81,6 @@ class Game:
     
     def gameover(self, player, boss):
         if player.life <= 0 or boss.life <= 0:
-            pass
+            self.playing = False
+            print("Game Over!")
     
