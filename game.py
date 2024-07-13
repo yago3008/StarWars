@@ -1,74 +1,84 @@
-import pygame, time as t
-from entities import Player, Boss, Game, draw_pixel_art, color, heart_pattern, speed_pattern
+from enemy import Enemy
+from buff import Buff
+import random, pygame
+from pattern import heart_pattern, speed_pattern
 
-pygame.init()
+class Game:
+    def __init__(self, score):
+        self.enemies = [Enemy(score)]
+        self.buffs = []
+        self.boss_fight = True
 
-# Configurações de tela
-display_W = 800
-display_H = 600
-display = pygame.display.set_mode((display_W, display_H))
-pygame.display.set_caption('StarWars Game')
-clock = pygame.time.Clock()
-font_style = pygame.font.SysFont("bahnschrift", 22)
+    def spawn_enemies(self, player):
+        if len(self.enemies) < player.score // 50 + 1:
+            self.enemies.append(Enemy(player.score))
 
-# Variáveis globais
-player = Player()
-game = Game(player.score)
-boss = Boss()
+    def create_buff(self, enemy):
+        n = random.randint(0, 20)
+        if n <= 10:
+            return Buff(1, "heal", enemy[0], enemy[1], heart_pattern)
+        if n > 10:
+            return Buff(90, "speed", enemy[0], enemy[1], speed_pattern)
+        return None
+    
+    def checkEnemyCollision(self, bullet, enemy_pos):
+        bullet_rect = pygame.Rect(bullet[0] - 22, bullet[1] - 20, 5, 5)
+        hitbox_size = 45
+        enemy_rect = pygame.Rect(enemy_pos[0] - hitbox_size // 2, enemy_pos[1] - hitbox_size // 2, hitbox_size, hitbox_size)
+        return bullet_rect.colliderect(enemy_rect)
+    
+    def checkBossCollision(self, bullet, boss_pos):
+        bullet_rect = pygame.Rect(bullet[0] - 22, bullet[1] - 20, 5, 5)
+        hitbox_sizeY = 200
+        hitbox_sizeX = 280
+        enemy_rect = pygame.Rect(boss_pos[0] - (hitbox_sizeX // 2) + 110 , boss_pos[1] - hitbox_sizeY // 2, hitbox_sizeX + (hitbox_sizeX // 4) - 25, hitbox_sizeY)
+        return bullet_rect.colliderect(enemy_rect)
 
-def draw_hearts(times, display):
-    for i in range(times):
-        draw_pixel_art(heart_pattern, 800 * i - (770 * i), 5, 3, display)
+    def spawn_enemy(self, player, display):
+        for enemy in self.enemies:
+            enemy.draw(display)
+            enemy.move()
+            enemy.outOfScreen(player)
+            for bullet in player.ammo:
+                for enemy in self.enemies:
+                    if self.checkEnemyCollision(bullet, (enemy.x, enemy.y)):
+                        player.score += 10
+                        player.ammo.remove(bullet)
+                        buff = self.create_buff((enemy.x, enemy.y))
+                        if buff:
+                            self.buffs.append(buff)
+                        self.boss_round(player)
+                        enemy.reset_position()
+                        enemy.update_speed(player.score)
+    
+    def boss_round(self, player):
+        if len(self.enemies) < player.score // 50 + 1:
+            self.boss_fight = True
 
-def cleanScreen(display):
-    display.fill(color('black'))
+    def spawn_boss(self, boss, player, display):
+        boss.draw(display)
+        boss.draw_bossLife(display)
+        boss.shoot(display, player)
+        if not boss.stop:
+            boss.move()
+        self.boss_alive(player, boss)
 
-def updateScreen():
-    pygame.display.update()
+    def apply_buffs(self, player, display):
+        for buff in self.buffs:
+            buff.draw(display, 3)
+            buff.move()
+            if buff.check_collision(player):
+                player.apply_buff(buff)
+                self.buffs.remove(buff)
 
-def message(msg, color, x, y, display, font_style):
-    mesg = font_style.render(msg, True, color)
-    display.blit(mesg, [x, y])
-
-def lose(player):
-    return player.life <= 0
-
-def main():  
-    alive = True
-
-    while alive:
-        cleanScreen(display)
-
-        if lose(player):
-            alive = False
-            #chamar tela final
-
-        draw_hearts(player.life, display)
-        message(f"Score: {player.score}", color('white'), 685, 3, display, font_style)
-        player.draw(display)
-        player.shoot(display)
-        game.apply_buffs(player, display)
-  
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                alive = False
-            if event.type == pygame.KEYDOWN: 
-                if event.key == pygame.K_ESCAPE:
-                    alive = False
-                if event.key == pygame.K_SPACE:
-                    player.ammo.append([player.x + player.size // 2 - 2, player.y])
-        
-        if not game.boss_fight:
-            game.spawn_enemy(player, boss, display)
-        else:
-            game.spawn_boss(boss, player, display)
-        
-        
-        updateScreen()
-        player.update_buffs()
-        player.move()
-        game.spawn_enemies(player)
-        clock.tick(60)
-    pygame.quit()
-    quit()
-main()
+    def boss_alive(self, player, boss):
+        for bullet in player.ammo:
+            if self.boss_fight:
+                if self.checkBossCollision(bullet, (boss.x, boss.y)):
+                    player.ammo.remove(bullet)
+                    boss.life -= 1
+    
+    def gameover(self, player, boss):
+        if player.life <= 0 or boss.life <= 0:
+            pass
+    
